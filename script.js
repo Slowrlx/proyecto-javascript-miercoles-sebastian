@@ -1,4 +1,5 @@
 const students = [];
+let editingIndex = null; // Índice del estudiante que se está editando
 
 document.getElementById("studentForm").addEventListener("submit", function (e) {
     e.preventDefault();
@@ -33,8 +34,18 @@ document.getElementById("studentForm").addEventListener("submit", function (e) {
     if (hasError) return;
 
     const student = { name, lastName, grade };
-    students.push(student);
-    addStudentToTable(student);
+
+    if (editingIndex !== null) {
+        // Estamos editando un estudiante
+        students[editingIndex] = student;
+        updateTable();
+        editingIndex = null;
+    } else {
+        // Estamos agregando un nuevo estudiante
+        students.push(student);
+        addStudentToTable(student);
+    }
+
     calcularPromedio();
     this.reset();
 });
@@ -42,27 +53,49 @@ document.getElementById("studentForm").addEventListener("submit", function (e) {
 const tableBody = document.querySelector("#studentTable tbody");
 
 function addStudentToTable(student) {
+    const index = students.indexOf(student);
+
     const row = document.createElement("tr");
     row.innerHTML = `
         <td>${student.name}</td>
         <td>${student.lastName}</td>
         <td>${student.grade}</td>
-        <td> <button class="delete">Eliminar <button class="modify">Editar</button</td>
+        <td> 
+            <button class="delete">Eliminar</button>
+            <button class="modify">Editar</button>
+        </td>
     `;
+    row.querySelector(".delete").addEventListener("click", function () {
+        deleteEstudiante(student, row);
+    });
 
-    row.querySelector(".delete").addEventListener("click",function(){deleteEstudiante(student,row);});
-    
+    row.querySelector(".modify").addEventListener("click", function () {
+        startEditing(student, index);
+    });
+
     tableBody.appendChild(row);
 }
 
-function deleteEstudiante(student,row){
-    // buscar el estudiante en el array
-    const index=students.indexOf(student);
-    if(index > -1){
-        students.splice(index,1);
+function deleteEstudiante(student, row) {
+    const index = students.indexOf(student);
+    if (index > -1) {
+        students.splice(index, 1);
         row.remove();
         calcularPromedio();
     }
+}
+
+function startEditing(student, index) {
+    document.getElementById("name").value = student.name;
+    document.getElementById("lastName").value = student.lastName;
+    document.getElementById("grade").value = student.grade;
+    editingIndex = index;
+}
+
+function updateTable() {
+    // Limpiar tabla y volver a agregar todos los estudiantes
+    tableBody.innerHTML = "";
+    students.forEach(student => addStudentToTable(student));
 }
 
 function calcularPromedio() {
