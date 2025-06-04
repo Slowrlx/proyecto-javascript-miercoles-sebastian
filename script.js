@@ -1,6 +1,8 @@
 const students = [];
 let editingIndex = null; // Índice del estudiante que se está editando
-
+const totalStudentsSpan = document.getElementById("totalStudents");
+const approvedCountSpan = document.getElementById("approvedCount");
+const failedCountSpan = document.getElementById("failedCount");
 document.getElementById("studentForm").addEventListener("submit", function (e) {
     e.preventDefault();
 
@@ -47,6 +49,7 @@ document.getElementById("studentForm").addEventListener("submit", function (e) {
     }
 
     calcularPromedio();
+    actualizarResumen();
     this.reset();
 });
 
@@ -82,6 +85,7 @@ function deleteEstudiante(student, row) {
         students.splice(index, 1);
         row.remove();
         calcularPromedio();
+        actualizarResumen();
     }
 }
 
@@ -109,4 +113,14 @@ function calcularPromedio() {
     const total = students.reduce((sum, student) => sum + student.grade, 0);
     const prom = total / students.length;
     averageDiv.textContent = "Promedio General del Curso: " + prom.toFixed(2);
+}
+
+function actualizarResumen() {
+    const total = students.length;
+    const aprobados = students.filter(s => s.grade >= 5).length;
+    const reprobados = total - aprobados;
+
+    totalStudentsSpan.textContent = total;
+    approvedCountSpan.textContent = aprobados;
+    failedCountSpan.textContent = reprobados;
 }
